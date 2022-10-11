@@ -138,7 +138,7 @@ class Correlation:
             for peak in peaks:
                 if np.isinf(peak.probability):
                     peaks.remove(peak)
-            self.peaks = events.EventList(peaks)
+            self.peaks = events.EventList(peaks, self.date)
 
     def fileName(self):
         # TODO time of day ??
