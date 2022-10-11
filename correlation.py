@@ -43,8 +43,8 @@ class Correlation:
         self.day = day
 
         if self.data_point_1.spectrum_data.start.day == self.day:
-            self.date = self.data_point_1.spectrum_data.start.day
-        elif (self.data_point_1.spectrum_data.start + timedelta(days=1)) == self.day:
+            self.date = self.data_point_1.spectrum_data.start
+        elif (self.data_point_1.spectrum_data.start + timedelta(days=1)).day == self.day:
             self.date = self.data_point_1.spectrum_data.start + timedelta(days=1)
         else:
             self.date = self.data_point_1.spectrum_data.start - timedelta(days=1)
