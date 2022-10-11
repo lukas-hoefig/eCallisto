@@ -70,7 +70,7 @@ def run2ndSearch(*date, mask_freq=True, no_bg=True, bin_f=False, bin_t=True, fla
                  r_w=30):
     date = const.getDateFromArgs(*date)
     events_day = analysis.loadData(date, step=1)
-    e_list = events.EventList([])
+    e_list = events.EventList([], date)
     limit = 0.8
 
     for event in events_day:
