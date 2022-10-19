@@ -24,6 +24,7 @@ def downloadFullDay(*date: Union[datetime.datetime, int],
     :param date: datetime
     :param station: name-codes|Stations
     """
+    return 
     date_ = const.getDateFromArgs(*date)
     station = copy.deepcopy(station)
     if not isinstance(station, list):

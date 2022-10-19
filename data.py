@@ -109,10 +109,16 @@ class DataPoint:
                 download.downloadFullDay(self.date, station=[self.observatory.name])
 
         file = self.path + self.file_name
-
+        file_okay = True
         if self.hour == 23 and self.minute > 30:
-            self.spectrum_data = self.readFalseDateFile()
-        else:
+            file_okay = False
+            with fits.open(self.path + self.file_name) as tmp:
+                try:
+                    if not tmp[0].header['TIME-END'].startswith("24"):
+                        file_okay = True
+                except TypeError:
+                    pass
+        if file_okay:
             try:
                 self.spectrum_data = CallistoSpectrogram.read(file)
             except TypeError:
@@ -441,16 +447,22 @@ def listDataPointDay(*date, station: stations.Station):
     date_behind_relevant = cutDayAfter(date_behind_list, midnight)
 
     if date_ahead_relevant and date_behind_relevant:
-        date_ahead_relevant.extend(cutDayAfter(day_list, midnight))
-        day_list = cutDayBefore(day_list, midnight)
-        day_list.extend(date_behind_relevant)
-
+        date_ahead_relevant = [date_ahead_relevant[-1]]
         frq_profile_1st = frqProfile(date_ahead_list)
         frq_profile_2nd = frqProfile(day_list)
-        date_ahead_relevant = cutFreqProfile(date_ahead_relevant, frq_profile_1st)
-        day_list = cutFreqProfile(day_list, frq_profile_2nd)
+        if frq_profile_1st == frq_profile_2nd:
+            date_ahead_relevant.extend(cutDayAfter(day_list, midnight))
 
-        date_ahead_relevant = date_ahead_relevant
+        day_list = cutDayBefore(day_list, midnight)
+        date_behind_relevant = [date_behind_relevant[0]]
+
+        frq_profile_3rd = frqProfile(date_behind_relevant)
+        if frq_profile_2nd == frq_profile_3rd:
+            day_list.extend(date_behind_relevant)
+
+        date_ahead_relevant = cutFreqProfile(date_ahead_relevant, frqProfile(date_ahead_relevant))
+
+        day_list = cutFreqProfile(day_list, frqProfile(day_list))
         return [date_ahead_relevant, day_list]
 
     if not day_list:
@@ -554,5 +566,6 @@ def plotCurve(_time, _data, _time_start, _bin_time, _bin_time_width, axis, _plot
     #     plt.savefig(const.path_plots + file_name)
     # plt.close()
     return curve
+
 
 plotCurve.curve = 0

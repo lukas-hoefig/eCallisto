@@ -10,9 +10,13 @@ Paths, names, constants needed in several scripts
 """
 
 
+import warnings
 import os
 import matplotlib.pyplot as plt
 import datetime
+
+warnings.simplefilter("ignore", UserWarning)
+
 
 
 def setupMatPlotLib():
@@ -84,7 +88,8 @@ def getPathScript():
 
 
 path_script = getPathScript()
-path_data = path_script + "eCallistoData/"                # "C:/Users/14hoefig/data/eCallisto/"                   #  "eCallistoData/"
+path_data = '/data/radio/2002-20yy_Callisto/'
+path_results = path_script + "/results/"
 path_plots = "eCallistoPlots/"
 file_type = ".fit"
 file_type_zip = ".fit.gz"
