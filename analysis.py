@@ -112,6 +112,9 @@ def calcPoint(*date, obs1: stations.Station, obs2: stations.Station, data_point_
     else:
         date_ = data_point_1.spectrum_data.start
 
+    if data_point_1.spectrum_data is None or data_point_2.spectrum_data is None:
+        return
+
     if mask_frq:
         mask1 = maskBadFrequencies(data_point_1, limit=limit_frq)
         mask2 = maskBadFrequencies(data_point_2, limit=limit_frq)
@@ -160,7 +163,8 @@ def plotDatapoint(datapoint: data.DataPoint):
     plt.show()
 
 
-def plotEverything(dp1: data.DataPoint, dp2: data.DataPoint, cor: correlation.Correlation):
+def plotEverything(dp1: data.DataPoint, dp2: data.DataPoint, cor: correlation.Correlation,
+                   limit=correlation.CORRELATION_MIN, save_img=False):
     if cor.day == dp1.day:
         year = dp1.year
         month = dp1.month
@@ -201,7 +205,7 @@ def plotEverything(dp1: data.DataPoint, dp2: data.DataPoint, cor: correlation.Co
     plt.xticks(rotation=60)
 
     ax2 = plt.twinx(ax)
-    plot_limit = ax2.axhline(0.8, color="yellow", linestyle='--', label='Correlation Limit')
+    plot_limit = ax2.axhline(limit, color="yellow", linestyle='--', label='Correlation Limit')
     time_axis_plot = []
     for i in _time:
         time_axis_plot.append(datetime.fromtimestamp(_time_start + i).strftime("%Y %m %d %H:%M:%S"))
@@ -259,10 +263,12 @@ def plotEverything(dp1: data.DataPoint, dp2: data.DataPoint, cor: correlation.Co
     labs = [i.get_label() for i in plots]
     plt.legend(plots, labs, loc="lower right")     # -> TODO position
     plt.tight_layout()
+    if save_img:
+        plt.savefig(cor.fileName(), transparent=True)   
     plt.show()
 
 
-def peaksInData(dp1: data.DataPoint, dp2: data.DataPoint, plot=False, peak_limit=2):
+def peaksInData(dp1: data.DataPoint, dp2: data.DataPoint, plot=False, peak_limit=2.35):
     """
 
     """
@@ -390,8 +396,8 @@ def getEvents(*args, mask_frq=None, r_window=None,
 
 def filename(*date, step: int):
     date_ = const.getDateFromArgs(*date)
-    return const.path_data + f"results/{date_.year}/{date_.month:02}/" + \
-                             f"{date_.year}_{date_.month:02}_{date_.day:02}_step{step}"
+    return const.path_results + f"{date_.year}/{date_.month:02}/" + \
+           f"{date_.year}_{date_.month:02}_{date_.day:02}_step{step}"
 
 
 def saveData(*date, step: int, event_list: events.EventList):
@@ -406,7 +412,7 @@ def saveData(*date, step: int, event_list: events.EventList):
         pickle.dump(event_list, file)
 
 
-def loadData(*date, step: int):
+def loadData(*date, step: int) -> events.EventList:
     """
     """
     date_ = const.getDateFromArgs(*date)
