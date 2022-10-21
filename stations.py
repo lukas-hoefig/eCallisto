@@ -96,8 +96,8 @@ def getFocusCode(*date, station: str):
         file = fits.open(config.pathDataDay(date_) + i)
         frq_axis = file[1].data['frequency'].flatten()
         frq = sorted([frq_axis[0], frq_axis[-1]])
-        if frq[0] < config.frq_limit_low_upper and frq[1] < config.frq_limit_high_upper and \
-                    frq[0] > config.frq_limit_low_lower and frq[1] < config.frq_limit_high_lower:
+        if config.frq_limit_low_upper > frq[0] > config.frq_limit_low_lower and \
+                    config.frq_limit_high_upper  > frq[1] > config.frq_limit_high_lower:
             return i.rsplit("_")[-1].rstrip(".fit.gz")
     raise ValueError("No valid focus code for that day")
 
@@ -153,7 +153,8 @@ def getStations(*date):
                         lon = -lon
                     frq_axis = fds[1].data['frequency'].flatten()
                     frq = sorted([frq_axis[0], frq_axis[-1]])
-                    if frq[0] < frq_limit_low and frq[1] < frq_limit_high:
+                    if config.frq_limit_low_upper > frq[0] > config.frq_limit_low_lower and \
+                            config.frq_limit_high_upper  > frq[1] > config.frq_limit_high_lower:
                         station = Station(name, focus_code, lon, lat, frq)
                         stations_return.append(station)
                 except IndexError:
@@ -177,8 +178,8 @@ def getStationFromFile(file: str):
                 lon = -lon
             frq_axis = fds[1].data["frequency"].flatten()
             frq = sorted([frq_axis[0], frq_axis[-1]])
-            if frq[0] < config.frq_limit_low_upper and frq[1] < config.frq_limit_high_upper and \
-                    frq[0] > config.frq_limit_low_lower and frq[1] < config.frq_limit_high_lower:
+            if config.frq_limit_low_upper > frq[0] > config.frq_limit_low_lower and \
+                    config.frq_limit_high_upper  > frq[1] > config.frq_limit_high_lower:
                 station = Station(name, focus_code, lon, lat, frq)
                 return station
             raise AttributeError("Station in file has wrong frequency range.")
