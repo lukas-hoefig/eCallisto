@@ -16,11 +16,11 @@ import urllib
 from bs4 import BeautifulSoup
 import os
 
-import const
+import config
 
-frq_limit_low = const.frq_limit_low
-frq_limit_high = const.frq_limit_high
-e_callisto_url = const.e_callisto_url
+frq_limit_low = config.frq_limit_low
+frq_limit_high = config.frq_limit_high
+e_callisto_url = config.e_callisto_url
 
 station_dict = {}
 station_list = []
@@ -88,17 +88,17 @@ def getFocusCode(*date, station: str):
     """
     gets the first valid focus code for the frq band 
     """
-    date_ = const.getDateFromArgs(*date)
+    date_ = config.getDateFromArgs(*date)
 
-    files = os.listdir(const.pathDataDay(date_))
+    files = os.listdir(config.pathDataDay(date_))
     files_station = [i for i in files if i.startswith(station)]
     for i in files_station:
-        file = fits.open(const.pathDataDay(date_) + i)
+        file = fits.open(config.pathDataDay(date_) + i)
         frq_axis = file[1].data['frequency'].flatten()
         frq = sorted([frq_axis[0], frq_axis[-1]])
         if frq[0] < frq_limit_low and frq[1] < frq_limit_high:
             return i.rsplit("_")[-1].rstrip(".fit.gz")
-    return ValueError("No valid focus code for that day")
+    raise ValueError("No valid focus code for that day")
 
 
 def listFilesDay(url: str):
@@ -107,7 +107,7 @@ def listFilesDay(url: str):
     """
     page = urllib.request.urlopen(url).read()
     soup = BeautifulSoup(page, 'html.parser')
-    return [node.get('href') for node in soup.find_all('a') if node.get('href').endswith('.fit.gz')]
+    return [node.get('href') for node in soup.find_all('a') if node.get('href').endswith(config.file_type_zip)]
 
 
 def listFD(url: str, station: List[str]):
@@ -119,11 +119,11 @@ def listFD(url: str, station: List[str]):
     soup = BeautifulSoup(page, 'html.parser')
 
     return [url + '/' + node.get('href') for node in soup.find_all('a')
-            if node.get('href').startswith(station[0]) and node.get('href').endswith(station[1] + '.fit.gz')]
+            if node.get('href').startswith(station[0]) and node.get('href').endswith(station[1] + config.file_type_zip)]
 
 
 def getStations(*date):
-    date_ = const.getDateFromArgs(*date)
+    date_ = config.getDateFromArgs(*date)
 
     date_str = "{:%Y/%m/%d}".format(date_)
     files = listFilesDay(e_callisto_url + date_str)

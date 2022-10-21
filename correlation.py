@@ -8,12 +8,12 @@ from datetime import datetime, timedelta
 
 import events
 import data
-import const
+import config
 
 CORRELATION_MIN = 0.8
 CORRELATION_PEAK_END = 0.25
-DATA_POINTS_PER_SECOND = const.DATA_POINTS_PER_SECOND
-BIN_FACTOR = const.BIN_FACTOR
+DATA_POINTS_PER_SECOND = config.DATA_POINTS_PER_SECOND
+BIN_FACTOR = config.BIN_FACTOR
 LENGTH_TYPE_III_AVG = 120    # TODO definition type II / III -> const | * 4 for seconds ?
 TYPE_III = "III"
 TYPE_II = " II"
@@ -217,6 +217,9 @@ class Correlation:
                                           (self.data_point_2.spectrum_data.end - self.data_point_2.spectrum_data.start)
                                           .total_seconds(), 2)
 
+        if self.no_background:
+            self.data_point_1.subtractBackground()
+            self.data_point_2.subtractBackground()
         if self.bin_time:
             self.data_point_1.binDataTime(width=self.bin_time_width, method=self.method_bin_t)
             self.data_point_2.binDataTime(width=self.bin_time_width, method=self.method_bin_t)

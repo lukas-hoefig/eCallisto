@@ -4,22 +4,22 @@
 from datetime import datetime
 import urllib
 
-import const
+import config
 import events
 import stations
 
-path_data = const.path_data
+path_data = config.path_data
 reference_header_length = 12
 
 
 def fileNameSWPC(*date, next_folder=False):
-    date_ = const.getDateFromArgs(*date)
+    date_ = config.getDateFromArgs(*date)
     return f"{path_data}reference/{date_.year + next_folder}_events/" \
            f"{date_.year}{date_.month:02}{date_.day:02}events.txt"
 
 
 def listSWPC(*date):
-    date_ = const.getDateFromArgs(*date)
+    date_ = config.getDateFromArgs(*date)
     try:
         file = fileNameSWPC(date_)
         f = open(file)
@@ -60,13 +60,13 @@ def listSWPC(*date):
 
 
 def urlMonstein(*date):
-    date_ = const.getDateFromArgs(*date)
+    date_ = config.getDateFromArgs(*date)
     return f"http://soleil.i4ds.ch/solarradio/data/BurstLists/2010-yyyy_Monstein/" \
            f"{date_.year}/e-CALLISTO_{date_.year}_{date_.month:02}.txt"
 
 
 def fileNameMonstein(*date):
-    date_ = const.getDateFromArgs(*date)
+    date_ = config.getDateFromArgs(*date)
     return f"{path_data}reference/{date_.year}_monstein/{date_.year}{date_.month:02}events.txt"
 
 
@@ -74,7 +74,7 @@ def listMonstein(*date):
     """
     TODO: download txt , check if file exist, only then check url
     """
-    date_ = const.getDateFromArgs(*date)
+    date_ = config.getDateFromArgs(*date)
     url = urlMonstein(*date)
     file = urllib.request.urlopen(url)
     event_list = events.EventList([], date_)
@@ -98,7 +98,7 @@ def listMonstein(*date):
                 _observatories = []
                 for i in _stations:
                     try:
-                        _observatories.append(stations.Station(i))        # TODO aaaaaaaaaaaaaaaaaaaaa
+                        _observatories.append(stations.Station(i)) 
                     except KeyError:
                         pass
                 event = events.Event(_time_start, end_time=_time_end, stations=_observatories, burst_type=_type)
@@ -107,7 +107,7 @@ def listMonstein(*date):
 
 
 def listMonstein2orMore(*date):
-    date_ = const.getDateFromArgs(*date)
+    date_ = config.getDateFromArgs(*date)
     url = urlMonstein(*date)
     file = urllib.request.urlopen(url)
     event_list = events.EventList([], date_)
@@ -129,7 +129,7 @@ def listMonstein2orMore(*date):
                 _observatories = []
                 for i in _stations:
                     try:
-                        _observatories.append(stations.Station(i))         # TODO
+                        _observatories.append(stations.Station(i)) 
                     except KeyError:
                         pass
                 if len(_observatories) < 2:

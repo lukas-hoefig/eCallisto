@@ -12,7 +12,7 @@ import os
 import pickle
 from typing import Union
 
-import const
+import config
 import data
 import correlation
 import events
@@ -28,7 +28,7 @@ mask_frq_limit = 1.5
 def maskBadFrequencies(datapoint: Union[data.DataPoint, np.ndarray], limit=mask_frq_limit):
     if isinstance(datapoint, data.DataPoint):
         dpt = copy.deepcopy(datapoint)
-        dpt.subtract_background()
+        dpt.subtractBackground()
         data_ = dpt.spectrum_data.data
     elif isinstance(datapoint, np.ndarray):
         data_ = datapoint
@@ -106,7 +106,7 @@ def calcPoint(*date, obs1: stations.Station, obs2: stations.Station, data_point_
         method_bin_f = 'median'
 
     if data_point_1 is None and data_point_2 is None:
-        date_ = const.getDateFromArgs(*date)
+        date_ = config.getDateFromArgs(*date)
         data_point_1 = data.createFromTime(date_, station=obs1, extent=extent)
         data_point_2 = data.createFromTime(date_, station=obs2, extent=extent)
     else:
@@ -137,6 +137,9 @@ def calcPoint(*date, obs1: stations.Station, obs2: stations.Station, data_point_
     data_point_2.createSummedCurve()
     data_point_1.flattenSummedCurve(rolling_window=correlation.default_flatten_window)
     data_point_2.flattenSummedCurve(rolling_window=correlation.default_flatten_window)
+    if no_bg:
+        data_point_1.subtractBackground()
+        data_point_2.subtractBackground()
     return data_point_1, data_point_2, cor
 
 
@@ -395,15 +398,15 @@ def getEvents(*args, mask_frq=None, r_window=None,
 
 
 def filename(*date, step: int):
-    date_ = const.getDateFromArgs(*date)
-    return const.path_results + f"{date_.year}/{date_.month:02}/" + \
+    date_ = config.getDateFromArgs(*date)
+    return config.path_results + f"{date_.year}/{date_.month:02}/" + \
            f"{date_.year}_{date_.month:02}_{date_.day:02}_step{step}"
 
 
 def saveData(*date, step: int, event_list: events.EventList):
     """
     """
-    date_ = const.getDateFromArgs(*date)
+    date_ = config.getDateFromArgs(*date)
     file_name = filename(date_, step=step)
     folder = file_name[:file_name.rfind("/")+1]
     if not (os.path.exists(folder) and os.path.isdir(folder)):
@@ -415,7 +418,7 @@ def saveData(*date, step: int, event_list: events.EventList):
 def loadData(*date, step: int) -> events.EventList:
     """
     """
-    date_ = const.getDateFromArgs(*date)
+    date_ = config.getDateFromArgs(*date)
     with open(filename(date_, step=step), "rb") as read_file:
         loaded_data = pickle.load(read_file)
 
