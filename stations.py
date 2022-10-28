@@ -18,8 +18,7 @@ import os
 
 import config
 
-frq_limit_low = config.frq_limit_low
-frq_limit_high = config.frq_limit_high
+
 e_callisto_url = config.e_callisto_url
 
 station_dict = {}
@@ -97,7 +96,7 @@ def getFocusCode(*date, station: str):
         frq_axis = file[1].data['frequency'].flatten()
         frq = sorted([frq_axis[0], frq_axis[-1]])
         if config.frq_limit_low_upper > frq[0] > config.frq_limit_low_lower and \
-                    config.frq_limit_high_upper  > frq[1] > config.frq_limit_high_lower:
+                    config.frq_limit_high_upper > frq[1] > config.frq_limit_high_lower:
             return i.rsplit("_")[-1].rstrip(".fit.gz")
     raise ValueError("No valid focus code for that day")
 
@@ -154,7 +153,7 @@ def getStations(*date):
                     frq_axis = fds[1].data['frequency'].flatten()
                     frq = sorted([frq_axis[0], frq_axis[-1]])
                     if config.frq_limit_low_upper > frq[0] > config.frq_limit_low_lower and \
-                            config.frq_limit_high_upper  > frq[1] > config.frq_limit_high_lower:
+                            config.frq_limit_high_upper > frq[1] > config.frq_limit_high_lower:
                         station = Station(name, focus_code, lon, lat, frq)
                         stations_return.append(station)
                 except IndexError:
@@ -179,7 +178,7 @@ def getStationFromFile(file: str):
             frq_axis = fds[1].data["frequency"].flatten()
             frq = sorted([frq_axis[0], frq_axis[-1]])
             if config.frq_limit_low_upper > frq[0] > config.frq_limit_low_lower and \
-                    config.frq_limit_high_upper  > frq[1] > config.frq_limit_high_lower:
+                    config.frq_limit_high_upper > frq[1] > config.frq_limit_high_lower:
                 station = Station(name, focus_code, lon, lat, frq)
                 return station
             raise AttributeError("Station in file has wrong frequency range.")
