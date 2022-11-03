@@ -79,9 +79,8 @@ class Event:
         delta_e2s1 = abs((self.time_start - other.time_end).total_seconds())
 
         return min(delta_start, delta_end, delta_e1s2, delta_e2s1) < timedelta(seconds=TIME_TOLERANCE).total_seconds() \
-            or (self.time_start < other.time_start and self.time_end > other.time_end) \
-            or (other.time_start < self.time_start and other.time_end > self.time_end)
-            or (other.time_start < self.time_start and other.time_end > self.time_end) 
+                or (self.time_start < other.time_start and self.time_end > other.time_end) \
+                or (other.time_start < self.time_start and other.time_end > self.time_end) 
 
     def __eq__(self, other):
         return self.compare(other)
@@ -146,17 +145,17 @@ class EventList:
                     if len(event_tmp.stations) < MAX_STATIONS:
                         event_tmp.stations.append(j)
                         event_tmp.stations = list(set(event_tmp.stations))
-                    elif j in event_tmp.stations and len(event_tmp.stations) >= MAX_STATIONS:
-                        pass
                     elif j not in event_tmp.stations and len(event_tmp.stations) >= MAX_STATIONS:
-                        for stat in enumerate(event_tmp.stations):
-                            if not other.stations.count(stat[1]):
-                                event_tmp.stations.pop(stat[0])
+                        removed = False
+                        for stat in event_tmp.stations:
+                            if not other.stations.count(stat) and not removed:
+                                event_tmp.stations.remove(stat)
                                 event_tmp.stations.append(j)
                                 event_tmp.stations = list(set(event_tmp.stations))
+                                removed = True
             else:
                 for j in other.stations:
-                    if len(event_tmp.stations) < MAX_STATIONS:
+                    if len(event_tmp.stations) <= MAX_STATIONS:
                         event_tmp.stations.append(j)
                         event_tmp.stations = list(set(event_tmp.stations))
                     else:
