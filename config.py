@@ -120,7 +120,7 @@ correlation_noise_limit_low = 0.15
 correlation_limit_1 = 0.7
 correlation_limit_2 = 0.8
 correlation_limit_lower = 0.9
-correlation_limit_higher = 0.95
+correlation_limit_higher = 0.945
 correlation_limit_low_noise = 0.95
 correlation_limit_high_noise = 0.98
 
