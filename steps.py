@@ -18,7 +18,7 @@ import config
 def run1stSearch(*date, mask_frq=False, nobg=True, bin_f=False, bin_t=False,
                  flatten=True, bin_t_w=4, flatten_w=400, r_w=180):
     date_ = config.getDateFromArgs(*date)
-    limit = 0.6
+    limit = config.correlation_limit_1
 
     print(f"starting 1st Step: {date_.year} {date_.month:02} {date_.day:02}")
     observatories = stations.getStations(date_)
@@ -70,14 +70,14 @@ def run2ndSearch(*date, mask_freq=True, no_bg=True, bin_f=False, bin_t=True, fla
     date_ = config.getDateFromArgs(*date)
     events_day = analysis.loadData(date_, step=1)
     e_list = events.EventList([], date_)
-    limit = 0.8
+    limit = config.correlation_limit_2
 
     num_events = len(events_day)
     current = 0
-    print(f"Starting 2nd Step\n{date_.year} {date_.month:02} {date_.day:02}, {num_events} events to go")
+    print(f"\nStarting 2nd Step\n{date_.year} {date_.month:02} {date_.day:02}, {num_events} events to go")
     for event in events_day:
         current += 1
-        print(f"{current:4} / {num_events:4} | {event}", end="\r")
+        print(f"{current:4} / {num_events:4} | {event}")
         obs = stations.StationSet(event.stations)
         set_obs = obs.getSet()
         for i in set_obs:
@@ -103,6 +103,14 @@ def run2ndSearch(*date, mask_freq=True, no_bg=True, bin_f=False, bin_t=True, fla
                                                        r_window=r_w,
                                                        flatten=flatten, bin_time=bin_t, bin_freq=bin_f, no_bg=no_bg,
                                                        flatten_window=bin_t_w, bin_time_width=flatten_w, limit=limit)
+                    if np.nanmean(cor.data_curve) > config.correlation_noise_limit_high:
+                        cor.peaks = []
+                        limit = config.correlation_limit_high_noise
+                    elif np.nanmean(cor.data_curve) > config.correlation_noise_limit_low:
+                        cor.peaks = []
+                        limit = config.correlation_limit_low_noise
+                    cor.calculatePeaks(limit=limit)
+
                     if dp1 is None:
                         continue
                     for peak in cor.peaks:
@@ -123,8 +131,8 @@ def run3rdSearch(*date):
     date_ = config.getDateFromArgs(*date)
     events_day = analysis.loadData(date_, step=2)
     e_list = events.EventList([], date_)
-    limit_1 = 0.90
-    limit_2 = 0.95
+    limit_1 = config.correlation_limit_lower
+    limit_2 = config.correlation_limit_higher
     print(f"Starting 3rd Step\n{date_.year} {date_.month:02} {date_.day:02}")
     for i in events_day:
         if i.probability < limit_1:

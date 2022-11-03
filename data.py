@@ -29,7 +29,7 @@ class DataPoint:
     """
     """
 
-    def __init__(self, file: str):
+    def __init__(self, file: str, debug=False):
         self.spectrum_data = None
         self.number_values = None
         self.summed_curve = []
@@ -60,6 +60,9 @@ class DataPoint:
         if not self:
             return
         self.cleanUpData()
+
+        if not debug:
+            self.plausibleDataCheck()
 
     def __add__(self, other):
         """
@@ -157,7 +160,7 @@ class DataPoint:
 
     def cleanUpData(self):
         """
-        cleans up multiple data entries in frequency range
+        cleans up multiple broken data entries in frequency range
         called by __init__
         """
         self.spectrum_data.data = self.spectrum_data.data[
@@ -248,6 +251,14 @@ class DataPoint:
 
         self.summed_curve = [np.nansum(self.spectrum_data.data.transpose()[time][freq_high:freq_low + 1]) for time
                              in range(self.number_values)]
+    
+    def plausibleDataCheck(self):
+        self.createSummedCurve()
+        self.flattenSummedCurve()
+        max_values = np.argwhere(self.summed_curve > np.nanmax(self.summed_curve) * 0.98)
+        if len(max_values) > (self.number_values / 35):
+            self.spectrum_data = None
+        self.summed_curve = []
 
     def subtractBackground(self):
         if self.background_subtracted:
@@ -274,15 +285,15 @@ class DataPoint:
         return f"{self.year}_{self.month:02}_{self.day:02}_{self.observatory}" \
                f"{['', '_nobg'][self.background_subtracted]}" \
                f"{['', '_binfreq'][self.binned_freq]}" \
-               f"{['', '_bintime_{}'.format(self.binned_time_width)][self.binned_time]}" \
-               f"{['', '_flatten_{}'.format(self.flattened_window)][self.flattened]}.png"
+               f"{['', f'_bintime_{self.binned_time_width}'][self.binned_time]}" \
+               f"{['', f'_flatten_{self.flattened_window}'][self.flattened]}.png"
 
     def dateTime(self):
         return datetime(year=self.year, month=self.month, day=self.day,
                         hour=self.hour, minute=self.minute, second=self.second)
 
 
-def createDayList(*date, station: Union[stations.Station, str]) -> List[DataPoint]:
+def createDayList(*date, station: Union[stations.Station, str], debug=False) -> List[DataPoint]:
     """
     Creates a list with DataPoints for a specific day for a Observatory with a specific spectral range
 
@@ -310,7 +321,7 @@ def createDayList(*date, station: Union[stations.Station, str]) -> List[DataPoin
 
     for file in files_observatory:
         try:
-            data_day.append(DataPoint(file))
+            data_day.append(DataPoint(file, debug=debug))
         except TypeError:
             # corrupt file
             pass
@@ -324,11 +335,11 @@ def createDayList(*date, station: Union[stations.Station, str]) -> List[DataPoin
     return data_day_return
 
 
-def createDay(*date, station: Union[stations.Station, str]) -> DataPoint:
-    return sum(createDayList(*date, station=station))
+def createDay(*date, station: Union[stations.Station, str], debug=False) -> DataPoint:
+    return sum(createDayList(*date, station=station, debug=debug))
 
 
-def createFromTime(*date, station: Union[stations.Station, str], extent=True) -> DataPoint:
+def createFromTime(*date, station: Union[stations.Station, str], extent=True, debug=False) -> DataPoint:
     date_ = config.getDateFromArgs(*date)
 
     if isinstance(station, str):
@@ -354,19 +365,19 @@ def createFromTime(*date, station: Union[stations.Station, str], extent=True) ->
         time_diff = time_target - time_file
 
         if time_diff < 15 * 60:
-            dp0 = DataPoint(file)
+            dp0 = DataPoint(file, debug=debug)
             dp = dp0
             if extent and i and ((date_.minute * 60 + date_.second) - (minute * 60 + second) < (5 * 60)):
-                dp_ahead = DataPoint(files_filtered[i - 1])
+                dp_ahead = DataPoint(files_filtered[i - 1], debug=debug)
                 dp = dp_ahead + dp0
             if extent and i + 1 < len(files_filtered) and (((date_.minute * 60 + date_.second) - (minute * 60 + second)) > (10 * 60)):
-                dp_after = DataPoint(files_filtered[i + 1])
+                dp_after = DataPoint(files_filtered[i + 1], debug=debug)
                 dp = dp0 + dp_after
             return dp
     raise FileNotFoundError("No file for the specified time and station found.")
 
 
-def createFromEvent(event: events.Event, station=None):
+def createFromEvent(event: events.Event, station=None, debug=False):
     """
     TODO 
     """
@@ -379,11 +390,11 @@ def createFromEvent(event: events.Event, station=None):
     else:
         obs = event.stations[0]
 
-    dp = createFromTime(time_start, station=obs)  # TODO this crashes -> whole thing as datetime, Events->datetime
+    dp = createFromTime(time_start, station=obs, debug=debug, extent=False)  # TODO this crashes -> whole thing as datetime, Events->datetime
     i = 1
     while dp.spectrum_data.end < time_end:
         new_time = time_start + timedelta(minutes=config.LENGTH_FILES_MINUTES * i)
-        dp += createFromTime(new_time, station=obs)
+        dp += createFromTime(new_time, station=obs, debug=debug, extent=False)
         i += 1
     
     if (event.time_start - event.time_end).total_seconds() < 20:

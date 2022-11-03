@@ -96,10 +96,10 @@ def calcPoint(*date, obs1: stations.Station, obs2: stations.Station, data_point_
         bin_freq = False
     if no_bg is None:
         no_bg = True
-    if r_window is None:
-        r_window = int(correlation.default_r_window/correlation.default_time_window)
     if bin_time_width is None:
         bin_time_width = correlation.default_time_window
+    if r_window is None:
+        r_window = int(correlation.default_r_window / bin_time_width)
     if method_bin_t is None:
         method_bin_t = 'median'
     if method_bin_f is None:
@@ -178,10 +178,11 @@ def plotEverything(dp1: data.DataPoint, dp2: data.DataPoint, cor: correlation.Co
         month = date.month
         day = date.day
 
-    if len(cor.data_curve) < len(dp1.spectrum_data.time_axis[::4]):
-        _time = dp1.spectrum_data.time_axis[::4][:len(cor.data_curve)]
-    else:
-        _time = dp1.spectrum_data.time_axis[::4]
+    # if len(cor.data_curve) < len(dp1.spectrum_data.time_axis[::4]):
+    #     _time = dp1.spectrum_data.time_axis[::4][:len(cor.data_curve)]
+    # else:
+    #     _time = dp1.spectrum_data.time_axis[::4]
+    _time = cor.time_axis    
     _time2 = dp1.spectrum_data.time_axis
     _time3 = dp2.spectrum_data.time_axis
     _time_start = cor.time_start
@@ -233,7 +234,7 @@ def plotEverything(dp1: data.DataPoint, dp2: data.DataPoint, cor: correlation.Co
     dataframe2 = pd.DataFrame()
     dataframe2['data'] = dp1.summed_curve
     dataframe2 = dataframe2.set_index(time_axis_plot2)
-    plot_dat = ax3.plot(dataframe2, color="blue", linewidth=1, label=f"Summed Intensity Curve {dp1.observatory.name}")
+    plot_dat = ax3.plot(dataframe2, color="white", linewidth=1, label=f"Summed Intensity Curve {dp1.observatory.name}")
 
     ax4 = plt.twinx(ax)
     ax4.set_axis_off()

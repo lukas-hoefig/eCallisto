@@ -10,11 +10,11 @@ import events
 import data
 import config
 
-CORRELATION_MIN = 0.8
+CORRELATION_MIN = config.correlation_limit_2
 CORRELATION_PEAK_END = 0.25
 DATA_POINTS_PER_SECOND = config.DATA_POINTS_PER_SECOND
 BIN_FACTOR = config.BIN_FACTOR
-LENGTH_TYPE_III_AVG = 120    # TODO definition type II / III -> const | * 4 for seconds ?
+LENGTH_TYPE_III_AVG = 120    # TODO definition type II / III  | in seconds | frq shift missing
 TYPE_III = "III"
 TYPE_II = " II"
 TYPE_IV = " IV"

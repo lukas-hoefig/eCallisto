@@ -8,9 +8,8 @@ from typing import List, Union
 
 import config
 
-MAX_STATIONS = 3
-TIME_TOLERANCE = 60
-LIMIT = 0.60
+MAX_STATIONS = 6
+TIME_TOLERANCE = 45
 DATA_POINTS_PER_SECOND = config.DATA_POINTS_PER_SECOND
 BIN_FACTOR = config.BIN_FACTOR
 BURST_TYPE_UNKNOWN = "???"
@@ -82,6 +81,7 @@ class Event:
         return min(delta_start, delta_end, delta_e1s2, delta_e2s1) < timedelta(seconds=TIME_TOLERANCE).total_seconds() \
             or (self.time_start < other.time_start and self.time_end > other.time_end) \
             or (other.time_start < self.time_start and other.time_end > self.time_end)
+            or (other.time_start < self.time_start and other.time_end > self.time_end) 
 
     def __eq__(self, other):
         return self.compare(other)
