@@ -42,9 +42,10 @@ def listSWPC(*date):
             lines[line].remove('+')
         except ValueError:
             pass
-
-    lines = list(filter(lambda i: i[6] == 'RSP' and not i[8].startswith('CTM'), lines))
-
+    try:
+        lines = list(filter(lambda i: i[6] == 'RSP' and not i[8].startswith('CTM'), lines))
+    except IndexError:
+        return events.EventList([], date_)
     references = []
     for line in lines:
         start_hour = int(line[1][:2])
@@ -73,6 +74,8 @@ def fileNameMonstein(*date):
 def listMonstein(*date):
     """
     TODO: download txt , check if file exist, only then check url
+
+    TODO: skip entries with typos -> raise warning, print line
     """
     date_ = config.getDateFromArgs(*date)
     url = urlMonstein(*date)
@@ -98,7 +101,7 @@ def listMonstein(*date):
                 _observatories = []
                 for i in _stations:
                     try:
-                        _observatories.append(stations.Station(i)) 
+                        _observatories.append(stations.Station(i))        # TODO - where from
                     except KeyError:
                         pass
                 event = events.Event(_time_start, end_time=_time_end, stations=_observatories, burst_type=_type)
@@ -129,7 +132,7 @@ def listMonstein2orMore(*date):
                 _observatories = []
                 for i in _stations:
                     try:
-                        _observatories.append(stations.Station(i)) 
+                        _observatories.append(stations.Station(i))         # TODO
                     except KeyError:
                         pass
                 if len(_observatories) < 2:

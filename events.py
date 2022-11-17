@@ -8,7 +8,7 @@ from typing import List, Union
 
 import config
 
-MAX_STATIONS = 6
+MAX_STATIONS = 8
 TIME_TOLERANCE = 45
 DATA_POINTS_PER_SECOND = config.DATA_POINTS_PER_SECOND
 BIN_FACTOR = config.BIN_FACTOR
@@ -72,7 +72,7 @@ class Event:
     def setTimeEnd(self, time: datetime):
         self.time_end = Time(time.year, time.month, time.day, time.hour, time.minute, time.second)
 
-    def compare(self, other):
+    def compare(self, other):  # TODO other strange
         delta_start = abs((self.time_start - other.time_start).total_seconds())
         delta_end  = abs((self.time_end - other.time_end).total_seconds())
         delta_e1s2 = abs((self.time_end - other.time_start).total_seconds())
@@ -201,3 +201,11 @@ class EventList:
 
     def sort(self):
         self.events = sorted(self.events, key=lambda event: event.time_start)
+
+
+def includes(event_list: EventList, event: Event):
+    for i in event_list:
+        if i.inList(EventList(event, event.time_start)):
+            return True
+    return False
+    

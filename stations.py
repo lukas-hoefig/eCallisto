@@ -18,13 +18,12 @@ import os
 
 import config
 
-
 e_callisto_url = config.e_callisto_url
 
-station_dict = {}
-station_list = []
-
-# TODO -> keep dict?
+# station_dict = {}
+# station_list = []
+#
+# # TODO -> keep dict?
 
 
 class Station:
@@ -45,8 +44,8 @@ class Station:
             name = self.name + self.focus_code
         else:
             name = self.name
-        station_list.append(name)
-        station_dict[name] = self
+        # station_list.append(name)
+        # station_dict[name] = self
 
     def __str__(self):
         return self.name
@@ -68,6 +67,9 @@ class Station:
 
 
 class StationSet:
+    """
+    TODO could be a single function
+    """
     def __init__(self, stations: List[Station]):
         self.stations = stations
 
@@ -79,8 +81,12 @@ class StationSet:
         return sets
 
 
-def getStationFromStr(name: str) -> Station:
-    return station_dict[name]
+def stationRange(station_list: List):
+    set_ = StationSet(station_list)
+    return set_.getSet()
+
+# def getStationFromStr(name: str) -> Station:
+#     return station_dict[name]
 
 
 def getFocusCode(*date, station: str):
@@ -90,13 +96,13 @@ def getFocusCode(*date, station: str):
     date_ = config.getDateFromArgs(*date)
 
     files = os.listdir(config.pathDataDay(date_))
-    files_station = [i for i in files if i.startswith(station)]
+    files_station = [i for i in files if i.startswith(station + "_")]
     for i in files_station:
         file = fits.open(config.pathDataDay(date_) + i)
         frq_axis = file[1].data['frequency'].flatten()
         frq = sorted([frq_axis[0], frq_axis[-1]])
         if config.frq_limit_low_upper > frq[0] > config.frq_limit_low_lower and \
-                    config.frq_limit_high_upper > frq[1] > config.frq_limit_high_lower:
+                config.frq_limit_high_upper > frq[1] > config.frq_limit_high_lower:
             return i.rsplit("_")[-1].rstrip(".fit.gz")
     raise ValueError("No valid focus code for that day")
 
@@ -141,7 +147,7 @@ def getStations(*date):
         focus_code = i[1]
         for a, b in enumerate(listFD(e_callisto_url + date_str, i)):
             with fits.open(b) as fds:
-                try:
+                try: 
                     lat = fds[0].header['OBS_LAT']
                     lac = fds[0].header['OBS_LAC']
                     if lac == 'S':
@@ -165,7 +171,7 @@ def getStations(*date):
 def getStationFromFile(file: str):
     name = file.rsplit("/")[-1].rsplit("_")[0]
     focus_code = file.rsplit("/")[-1].rsplit("_")[-1].rstrip(".fit.gz")
-    try:    
+    try:
         with fits.open(file) as fds:
             lat = fds[0].header['OBS_LAT']
             lac = fds[0].header['OBS_LAC']
@@ -178,9 +184,8 @@ def getStationFromFile(file: str):
             frq_axis = fds[1].data["frequency"].flatten()
             frq = sorted([frq_axis[0], frq_axis[-1]])
             if config.frq_limit_low_upper > frq[0] > config.frq_limit_low_lower and \
-                    config.frq_limit_high_upper > frq[1] > config.frq_limit_high_lower:
-                station = Station(name, focus_code, lon, lat, frq)
-                return station
+                    config.frq_limit_high_upper  > frq[1] > config.frq_limit_high_lower:
+                return Station(name, focus_code, lon, lat, frq)
             raise AttributeError("Station in file has wrong frequency range.")
     except IndexError:
         print(f"failed to open {file}")
