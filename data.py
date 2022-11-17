@@ -124,7 +124,11 @@ class DataPoint:
                 except TypeError:
                     pass
         if file_okay:
-            self.spectrum_data = self.readFalseDateFile()
+            try:
+                self.spectrum_data = CallistoSpectrogram.read(file)
+            except TypeError:
+                self.spectrum_data = None
+                return
         else:
             try:
                 self.spectrum_data = CallistoSpectrogram.read(file)
