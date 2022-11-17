@@ -113,8 +113,17 @@ class DataPoint:
                 download.downloadFullDay(self.date, station=[self.observatory.name])
 
         file = self.path + self.file_name
+        file_okay = True
 
         if self.hour == 23 and self.minute > 30:
+            file_okay = False
+            with fits.open(self.path + self.file_name) as tmp:
+                try:
+                    if not tmp[0].header['TIME-END'].startswith("24"):
+                        file_okay = True
+                except TypeError:
+                    pass
+        if file_okay:
             self.spectrum_data = self.readFalseDateFile()
         else:
             try:
